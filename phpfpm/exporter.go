@@ -158,7 +158,7 @@ func NewExporter(pm PoolManager) *Exporter {
 		processRequestDuration: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "", "process_request_duration"),
 			"The duration in microseconds of the requests.",
-			[]string{"pool", "child", "scrape_uri"},
+			[]string{"pool", "child", "request_uri"},
 			nil),
 
 		processState: prometheus.NewDesc(
@@ -213,7 +213,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 
 		for childNumber, process := range pool.Processes {
 			childName := fmt.Sprintf("%d", childNumber)
-			
+
 			states := map[string]int{
 				PoolProcessRequestIdle:           0,
 				PoolProcessRequestRunning:        0,
@@ -230,7 +230,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 			ch <- prometheus.MustNewConstMetric(e.processRequests, prometheus.CounterValue, float64(process.Requests), pool.Name, childName, pool.Address)
 			ch <- prometheus.MustNewConstMetric(e.processLastRequestMemory, prometheus.GaugeValue, float64(process.LastRequestMemory), pool.Name, childName, pool.Address)
 			ch <- prometheus.MustNewConstMetric(e.processLastRequestCPU, prometheus.GaugeValue, process.LastRequestCPU, pool.Name, childName, pool.Address)
-			ch <- prometheus.MustNewConstMetric(e.processRequestDuration, prometheus.GaugeValue, float64(process.RequestDuration), pool.Name, childName, pool.Address)
+			ch <- prometheus.MustNewConstMetric(e.processRequestDuration, prometheus.GaugeValue, float64(process.RequestDuration), pool.Name, childName, process.RequestURI)
 		}
 	}
 }
